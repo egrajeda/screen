@@ -10,7 +10,9 @@ server and localhost.
 
 It looks something like this:
 
-mockup.png
+<center>
+  <img src="mockup.png" />
+</center>
 
 To use it add in your .zshrc something like this:
 
