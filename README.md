@@ -11,7 +11,7 @@ server and localhost.
 It looks something like this:
 
 <center>
-  <img src="mockup.png" />
+  <img src="https://github.com/egrajeda/screen/raw/master/mockup.png" />
 </center>
 
 To use it add in your .zshrc something like this:
