@@ -1,4 +1,34 @@
+# README
 
+This is the original GNU screen package plus some small modifications that I've made
+and will try to keep doing. *The original package README is below*.
+
+So far, the only extra feature added is that you can colorize the window name in the
+status bar when setting the terminal title with bash/zsh. I did it because for me it
+was important to know on which windows I was on the production server, the development
+server and localhost.
+
+It looks something like this:
+
+(mockup.png)
+
+To use it add in your .zshrc something like this:
+
+    if [[ "$TERM" == screen* ]]; then
+        print -Pn "\033k\033\134\033k%n@%m\033\134"
+    fi
+
+Or if you are using bash, add this to your .bashrc:
+
+    if [[ "$TERM" == screen* ]]; then
+        echo -ne "\033k\033\134\033k\\\e[41m pilote \\\e[0m\033\134"
+    fi
+
+You will have to modify your .zshrc/.bashrc in your remote servers aswell.
+
+## Original README
+
+<pre>
   [If you just got the screen package, it pays to read the file INSTALL]
   [This intro only describes the most common features to get you started]
   [A full description of all features is contained in the source package]
@@ -99,4 +129,5 @@ screen -wipe
 screen -h 200
   Starts a new screen session and sets the number of lines in the scrollback
   buffer to 200. The default is 100 lines.
+</pre>
 
