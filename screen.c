@@ -2785,12 +2785,62 @@ int esc;
   return MakeWinMsgEv(s, win, esc, 0, (struct event *)0, 0);
 }
 
+
+static
+int
+PutWinMsgChar(s, start, n, fillw)
+char **s;
+int start, *n, *fillw;
+{
+  int i, l, color;
+  struct mchar rend;
+  rend = D_rend;
+
+  debug3("PutWinMsgChar: %s %d %d\n", *s, start, *n);
+
+  if (start-- > 0)
+    (*s)++;
+  else
+    {
+      if (strncmp(*s, "\\e[41m", 6) == 0
+        || strncmp(*s, "\\e[0m", 5) == 0)
+        {
+          if (strncmp(*s, "\\e[41m", 6) == 0)
+            {
+              l = 6;
+              color = 0x4EFFFFF;
+            }
+          else
+            {
+              l = 5;
+              color = 0x48FFFFF;
+            }
+          ApplyAttrColor(color, &rend);
+          SetRendition(&rend);
+
+          *s += l;
+          *n -= l;
+          *fillw += l;
+
+          /*
+          if (color != 0x48FFFFF)
+            {
+              GotoPos(D_x-2, D_y);
+              PUTCHARLP(*((*s)-l-2));
+              PUTCHARLP(*((*s)-l-1));
+            }
+          */
+        }
+      PUTCHARLP(*((*s)++));
+    }
+}
+
 int
 PutWinMsg(s, start, max)
 char *s;
 int start, max;
 {
-  int i, p, l, r, n;
+  int i, p, l, r, n, fillw;
   struct mchar rend;
   struct mchar rendstack[MAX_WINMSG_REND];
   int rendstackn = 0;
@@ -2800,6 +2850,7 @@ int start, max;
   rend = D_rend;
   p = 0;
   l = strlen(s);
+  fillw = -1;
   debug2("PutWinMsg %s start attr %x\n", s, rend.attr);
   for (i = 0; i < winmsg_numrend && max > 0; i++)
     {
@@ -2813,12 +2864,7 @@ int start, max;
 	  max -= n;
 	  p += n;
 	  while(n-- > 0)
-	    {
-	      if (start-- > 0)
-		s++;
-	      else
-	        PUTCHARLP(*s++);
-	    }
+            PutWinMsgChar(&s, start, &n, &fillw);
 	}
       r = winmsg_rend[i];
       if (r == -1)
@@ -2828,8 +2874,8 @@ int start, max;
 	}
       else
 	{
-	  rendstack[rendstackn++] = rend;
-	  ApplyAttrColor(r, &rend);
+          rendstack[rendstackn++] = rend;
+          ApplyAttrColor(r, &rend);
 	}
       SetRendition(&rend);
     }
@@ -2839,13 +2885,10 @@ int start, max;
       if (n > max)
 	n = max;
       while(n-- > 0)
-	{
-	  if (start-- > 0)
-	    s++;
-	  else
-	    PUTCHARLP(*s++);
-	}
+        PutWinMsgChar(&s, start, &n, &fillw);
     }
+  while (fillw-- > 0)
+    PUTCHARLP(' ');
   return 1;
 }
 
